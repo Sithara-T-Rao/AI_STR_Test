@@ -1,0 +1,31 @@
+name: PR Summary Generator
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  generate-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for /summary command
+        if: contains(github.event.comment.body, '/summary')
+        run: |
+          PR_BODY=$(git show --format=%b --no-patch)
+          SUMMARY=$(node generateSummary.js "$PR_BODY")
+          echo "PR Summary: $SUMMARY"
+
+      - name: Post summary as a comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.payload.issue.number;
+            const prSummary = process.env.SUMMARY;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `### PR Summary:\n\n${prSummary}`
+            });
