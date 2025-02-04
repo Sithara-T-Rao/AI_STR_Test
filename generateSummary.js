@@ -1,23 +1,13 @@
 const axios = require('axios');
-const { execSync } = require('child_process');
 
-// Fetch the latest commit message (or diff) as an example input
-function getCommitMessages() {
-    try {
-        const commitMessage = execSync('git log -1 --pretty=%B').toString().trim();
-        console.log("Commit Message:", commitMessage);  // Debugging line to log the commit message
-        return commitMessage;
-    } catch (error) {
-        console.error("Error fetching commit message:", error);
-        return "";
-    }
-}
+// Example commit message or PR text
+const commitMessage = "This PR adds a new feature that improves RecyclerView performance.";
 
-// Function to call the Hugging Face API for summary
+// Send request to Hugging Face's model (e.g., BART for summarization)
 async function getSummaryFromAI(text) {
     try {
         const response = await axios.post(
-            "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",  // Example model
+            "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",  // Using a BART model
             { inputs: text },
             {
                 headers: {
@@ -25,31 +15,14 @@ async function getSummaryFromAI(text) {
                 },
             }
         );
-        console.log("Summary from AI:", response.data[0].summary_text);  // Debugging line to log AI output
         return response.data[0].summary_text;
     } catch (error) {
-        console.error("Error calling Hugging Face API:", error);
+        console.error("Error fetching summary from Hugging Face:", error);
         return "Failed to generate summary.";
     }
 }
 
-// Main function to generate summary
-async function generateSummary() {
-    const commitMessages = getCommitMessages();
-    
-    if (!commitMessages) {
-        console.log("No commit message found.");
-        return "No changes detected in this PR.";
-    }
-
-    // Send commit message or diff to Hugging Face API for summarization
-    const summary = await getSummaryFromAI(commitMessages);
-    
-    console.log("Final Summary:", summary);  // Debugging line to ensure summary is not empty
-    return summary;
-}
-
-// Generate summary and print it
-generateSummary().then((summary) => {
-    console.log("Generated Summary:", summary);  // Output summary to console (GitHub Action will capture this)
+// Call the summarization function
+getSummaryFromAI(commitMessage).then((summary) => {
+    console.log("Generated Summary:", summary); // Log the summary for debugging
 });
