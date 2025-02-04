@@ -1,8 +1,8 @@
 name: PR Summarizer
 
 permissions:
-  pull-requests: write
-  contents: read
+  pull-requests: write  # Allows posting comments on PRs
+  contents: read        # Allows reading repository contents (for commit details)
 
 on:
   pull_request:
@@ -12,30 +12,40 @@ jobs:
   summarize:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout the repository code
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 2
 
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: '18'
 
+      # Step 3: Install dependencies (Axios)
       - name: Install Dependencies
         run: npm install axios
 
+      # Step 4: Fetch PR Body (Description) from GitHub API
+      - name: Fetch PR Description
+        id: pr_data
+        run: |
+          PR_BODY=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} | jq -r .body)
+          echo "PR body fetched"
+          echo "::set-output name=pr_description::$PR_BODY"
+
+      # Step 5: Generate PR Summary using Hugging Face
       - name: Generate PR Summary
         id: summary
         run: |
           echo "Generating PR summary..."
-          node generateSummary.js > summary.txt
+          node generateSummary.js "${{ steps.pr_data.outputs.pr_description }}" > summary.txt
           echo "::set-output name=summary::$(cat summary.txt)"
 
-      - name: Debug PR Summary Output
-        run: |
-          echo "Summary generated: ${{ steps.summary.outputs.summary }}"
-      
+      # Step 6: Post Summary as PR Comment
       - name: Post Summary as PR Comment
         run: |
           echo "Posting summary as PR comment..."
