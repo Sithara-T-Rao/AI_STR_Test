@@ -42,3 +42,4 @@ jobs:
           gh pr comment ${{ github.event.pull_request.html_url }} --body "### PR Summary:\n\n${{ steps.summary.outputs.summary }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HUGGING_FACE_API_KEY: ${{ secrets.HUGGING_FACE_API_KEY }}
