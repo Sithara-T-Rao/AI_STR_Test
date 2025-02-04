@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         val dataList = arrayListOf<String>()
 
         for (i in 1..20) {
-            dataList.add("Item $i test")
+            dataList.add("Item $i")
         }
 
         val adapter = MyAdapter(dataList)
