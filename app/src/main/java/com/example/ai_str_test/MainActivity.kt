@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
             dataList.add("Item hi $i")
         }
 
+        dataList.sort()
         val adapter = MyAdapter(dataList)
         recyclerView.adapter = adapter
 
