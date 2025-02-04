@@ -1,9 +1,8 @@
 name: PR Summarizer
 
-# Define the permissions
 permissions:
-  pull-requests: write  # Allows adding comments to PRs
-  contents: read        # Allows reading repo contents
+  pull-requests: write
+  contents: read
 
 on:
   pull_request:
@@ -16,7 +15,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 2  # Ensures we can compare changes
+          fetch-depth: 2
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -28,9 +27,18 @@ jobs:
 
       - name: Generate PR Summary
         id: summary
-        run: echo "::set-output name=summary::$(node generateSummary.js)"
+        run: |
+          echo "Generating PR summary..."
+          node generateSummary.js > summary.txt
+          echo "::set-output name=summary::$(cat summary.txt)"
 
+      - name: Debug PR Summary Output
+        run: |
+          echo "Summary generated: ${{ steps.summary.outputs.summary }}"
+      
       - name: Post Summary as PR Comment
-        run: gh pr comment ${{ github.event.pull_request.html_url }} --body "### PR Summary:\n\n${{ steps.summary.outputs.summary }}"
+        run: |
+          echo "Posting summary as PR comment..."
+          gh pr comment ${{ github.event.pull_request.html_url }} --body "### PR Summary:\n\n${{ steps.summary.outputs.summary }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
