@@ -21,13 +21,26 @@ class MyAdapter(private val dataList: List<String>) : RecyclerView.Adapter<Recyc
         val rv: RecyclerView = itemView.findViewById(R.id.child_rv)
     }
 
+    class MyTitleSubtitleViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val subtitle: TextView = itemView.findViewById(R.id.subtitle)
+        val title: TextView = itemView.findViewById(R.id.title)
+        val rv: RecyclerView = itemView.findViewById(R.id.child_rv)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if(viewType == 0) {
+        if(viewType == ViewHolderFactory.TYPE_0) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout, parent, false)
             return MyViewHolder(view)
+        } else if(viewType == ViewHolderFactory.TYPE_1) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout2, parent, false)
+            return MyTitleSubtitleViewHolder(view)
+        } else if(viewType == ViewHolderFactory.TYPE_2){
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout1, parent, false)
+            return MyImageViewHolder(view)
+        } else {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout1, parent, false)
+            return MyImageViewHolder(view)
         }
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout1, parent, false)
-        return MyImageViewHolder(view)
     }
 
     override fun onBindViewHolder(holder:  RecyclerView.ViewHolder, position: Int) {
@@ -52,14 +65,26 @@ class MyAdapter(private val dataList: List<String>) : RecyclerView.Adapter<Recyc
             }
             val adapter = MyChildAdapter(dataList)
             holder.rv.adapter = adapter
+        } else if(holder is MyTitleSubtitleViewHolder){
+            holder.title.text = dataList[position]
+            holder.subtitle.text = dataList[position] + " subtitle"
+            holder.rv.layoutManager = LinearLayoutManager(holder.rv.context, RecyclerView.HORIZONTAL, false)
+            val dataList = arrayListOf<String>()
+
+            for (i in 1..20) {
+                dataList.add("Child Item $i")
+            }
+            val adapter = MyChildAdapter(dataList)
+            holder.rv.adapter = adapter
         }
 
 
     }
 
     override fun getItemViewType(position: Int): Int {
-        if(position % 2 == 0) return 0
-        return 1
+        if(position % 3 == 0) return 0
+        else if(position % 3 == 1) return 1
+        return 2
     }
 
     override fun getItemCount(): Int {
