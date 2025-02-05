@@ -50,8 +50,8 @@ jobs:
       - name: Check for View Types in PR Summary
         id: check_view_types
         run: |
-          echo "Checking for keywords related to ViewHolderFactory or view types..."
-          
+          echo "Starting to check for keywords related to ViewHolderFactory or view types..."
+
           # Define the list of keywords related to ViewHolderFactory or view types
           keywords=("ViewHolderFactory" "TYPE_0" "TYPE_1" "TYPE_2")
 
@@ -65,9 +65,12 @@ jobs:
           matched_keywords=()
 
           # Loop through each keyword and check if it exists in the review output
+          echo "Checking for the following keywords: ${keywords[*]}"
           for keyword in "${keywords[@]}"; do
+            echo "Checking for keyword: $keyword"
             if [[ "$review_output" == *"$keyword"* ]]; then
               matched_keywords+=("$keyword")
+              echo "Keyword found: $keyword"
             fi
           done
 
