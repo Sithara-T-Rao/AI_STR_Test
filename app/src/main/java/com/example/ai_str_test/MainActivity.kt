@@ -17,10 +17,9 @@ class MainActivity : ComponentActivity() {
         val dataList = arrayListOf<String>()
 
         for (i in 1..20) {
-            dataList.add("Item hi $i")
+            dataList.add("Widget Title $i")
         }
 
-        dataList.sort()
         val adapter = MyAdapter(dataList)
         recyclerView.adapter = adapter
 
