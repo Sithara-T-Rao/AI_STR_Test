@@ -17,11 +17,12 @@ class MainActivity : ComponentActivity() {
         val dataList = arrayListOf<String>()
 
         for (i in 1..20) {
-            dataList.add("Item $i")
+            dataList.add("Widget Title $i")
         }
 
         val adapter = MyAdapter(dataList)
         recyclerView.adapter = adapter
+
 
 
     }

@@ -5,13 +5,10 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/textView"
+    <ImageView
+        android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Sample Item"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:layout_height="20dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
