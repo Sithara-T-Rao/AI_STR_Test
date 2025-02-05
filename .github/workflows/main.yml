@@ -34,6 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: truongnh1992/gemini-ai-code-reviewer@main
+        id: gemini
         with:
           review_type: "detailed"
           prompt: "Analyze the changes and specifically check if any new view types were added in RecyclerView Adapters. If so, explicitly mention them in your review."
@@ -42,10 +43,14 @@ jobs:
           GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
           INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
 
+      - name: Print All Outputs
+        run: |
+          echo "All Outputs: ${{ toJson(steps.gemini.outputs) }}"
+
       - name: Check AI Review Output
         run: |
           # Debugging output: Print the AI review
-          echo "AI Review Output: ${{ steps.gemini-code-review.outputs.review }}"
+          echo "AI Review Output: ${{ steps.gemini.outputs.review }}"
 
       - name: Check for View Types in PR Summary
         id: check_view_types
@@ -56,7 +61,7 @@ jobs:
           keywords=("ViewHolderFactory" "TYPE_0" "TYPE_1" "TYPE_2")
 
           # Generate the AI review output (PR summary)
-          review_output="${{ steps.gemini-code-review.outputs.review }}"
+          review_output="${{ steps.gemini.outputs.review }}"
 
           # Debugging: Print the AI review to see what it contains
           echo "AI Review: $review_output"
