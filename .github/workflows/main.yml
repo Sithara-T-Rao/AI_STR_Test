@@ -45,10 +45,11 @@ jobs:
 
       - name: Print All Outputs
         run: |
-         echo ${{ secrets.GITHUB_TOKEN }}
-         echo "Steps: ${{ toJson(steps) }}"
-         echo "Steps.Gemini: ${{ toJson(steps.gemini) }}"
-         echo "All Outputs: ${{ toJson(steps.gemini.outputs) }}"
+          echo ${{ secrets.GITHUB_TOKEN }}
+          echo "Steps: ${{ toJson(steps) }}"
+          echo "Steps.Gemini: ${{ toJson(steps.gemini) }}"
+          echo "All Outputs: ${{ toJson(steps.gemini.outputs) }}"
+          echo "AI Review Output: ${{ steps.gemini.outputs.review }}"
 
       - name: Check AI Review Output
         run: |
@@ -89,7 +90,6 @@ jobs:
           else
             echo "No relevant view types found in this PR."
             echo "Found_View_Types=No relevant view types found" >> $GITHUB_ENV
-          fi
 
       - name: Post View Types to PR Comment
         run: |
@@ -102,6 +102,5 @@ jobs:
           else
             echo "Changes detected in view types: $view_types"
             gh pr comment ${{ github.event.issue.pull_request.html_url }} --body "### PR Review Summary:\n\nChanges detected in the following view types: $view_types."
-          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
