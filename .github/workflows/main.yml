@@ -45,7 +45,9 @@ jobs:
 
       - name: Print All Outputs
         run: |
-          echo "All Outputs: ${{ toJson(steps.gemini.outputs) }}"
+         echo "Steps: ${{ toJson(steps) }}"
+         echo "Steps.Gemini: ${{ toJson(steps.gemini) }}"
+         echo "All Outputs: ${{ toJson(steps.gemini.outputs) }}"
 
       - name: Check AI Review Output
         run: |
