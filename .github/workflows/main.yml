@@ -50,6 +50,8 @@ jobs:
       - name: Check for View Types in PR Summary
         id: check_view_types
         run: |
+          echo "Checking for keywords related to ViewHolderFactory or view types..."
+          
           # Define the list of keywords related to ViewHolderFactory or view types
           keywords=("ViewHolderFactory" "TYPE_0" "TYPE_1" "TYPE_2")
 
