@@ -45,6 +45,7 @@ jobs:
 
       - name: Print All Outputs
         run: |
+         echo ${{ secrets.GITHUB_TOKEN }}
          echo "Steps: ${{ toJson(steps) }}"
          echo "Steps.Gemini: ${{ toJson(steps.gemini) }}"
          echo "All Outputs: ${{ toJson(steps.gemini.outputs) }}"
