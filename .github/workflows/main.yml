@@ -82,10 +82,10 @@ jobs:
           # Check if any keywords were found and print them
           if [ ${#matched_keywords[@]} -gt 0 ]; then
             echo "Found View Types: ${matched_keywords[*]}"
-            echo "Found View Types: ${matched_keywords[*]}" >> $GITHUB_ENV
+            echo "Found_View_Types=${matched_keywords[*]}" >> $GITHUB_ENV
           else
             echo "No relevant view types found in this PR."
-            echo "No relevant view types found in this PR." >> $GITHUB_ENV
+            echo "Found_View_Types=No relevant view types found" >> $GITHUB_ENV
           fi
 
       - name: Post View Types to PR Comment
@@ -93,7 +93,7 @@ jobs:
           # Get the list of matched view types from the environment
           view_types="${{ env.Found_View_Types }}"
 
-          if [[ "$view_types" == *"No relevant view types found"* ]]; then
+          if [[ "$view_types" == "No relevant view types found" ]]; then
             echo "No changes in view types detected in this PR."
             gh pr comment ${{ github.event.issue.pull_request.html_url }} --body "### PR Review Summary:\n\nNo new view types added or changed."
           else
