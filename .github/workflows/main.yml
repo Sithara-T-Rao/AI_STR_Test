@@ -42,6 +42,11 @@ jobs:
           GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
           INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
 
+      - name: Check AI Review Output
+        run: |
+          # Debugging output: Print the AI review
+          echo "AI Review Output: ${{ steps.gemini-code-review.outputs.review }}"
+
       - name: Check for View Types in PR Summary
         id: check_view_types
         run: |
@@ -50,6 +55,9 @@ jobs:
 
           # Generate the AI review output (PR summary)
           review_output="${{ steps.gemini-code-review.outputs.review }}"
+
+          # Debugging: Print the AI review to see what it contains
+          echo "AI Review: $review_output"
 
           # Initialize an empty array to hold matching keywords
           matched_keywords=()
