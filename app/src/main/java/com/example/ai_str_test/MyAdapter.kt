@@ -34,13 +34,9 @@ class MyAdapter(private val dataList: List<String>) : RecyclerView.Adapter<Recyc
         } else if(viewType == ViewHolderFactory.TYPE_1) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout2, parent, false)
             return MyTitleSubtitleViewHolder(view)
-        } else if(viewType == ViewHolderFactory.TYPE_2){
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout1, parent, false)
-            return MyImageViewHolder(view)
-        } else {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout1, parent, false)
-            return MyImageViewHolder(view)
         }
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout1, parent, false)
+        return MyImageViewHolder(view)
     }
 
     override fun onBindViewHolder(holder:  RecyclerView.ViewHolder, position: Int) {
