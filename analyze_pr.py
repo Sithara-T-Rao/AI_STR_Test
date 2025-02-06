@@ -28,13 +28,27 @@ newly_added:
     File: "..."
     SuggestedPlacement: "Inside RecyclerView Adapter XYZ"
     SuggestedCode: |
-      class NewViewHolder extends RecyclerView.ViewHolder {{
-          public NewViewHolder(View itemView) {{
+      class NewViewHolder extends RecyclerView.ViewHolder {
+          public NewViewHolder(View itemView) {
               super(itemView);
               // Initialize views properly here
-          }}
-      }}
+          }
+      }
 
 updated:
   - ViewHolderName: "..."
-  
+    File: "..."
+    Changes: "Detailed description of what was changed"
+
+edited:
+  - ViewHolderName: "..."
+    File: "..."
+    Recommendations: "Suggestions on what to add/remove"
+```"""
+
+# Generate the analysis
+response = model.generate_text(prompt)
+
+# Save the output to a YAML file
+with open("pr_analysis_output.yaml", "w") as output_file:
+    output_file.write(response.text)
