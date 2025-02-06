@@ -10,7 +10,7 @@ model = genai.GenerativeModel("gemini-pro")
 with open("pr_diff.txt", "r") as file:
     pr_diff = file.read()
 
-# Define the AI prompt (use .format() instead of f-string)
+# Define the AI prompt (properly closed triple quotes)
 prompt = """Analyze the following GitHub PR diff and classify ViewHolders and ViewTypes into:
 - Newly added (with file path and suggested placement)
 - Updated (with what was changed)
@@ -37,16 +37,4 @@ newly_added:
 
 updated:
   - ViewHolderName: "..."
-    File: "..."
-    Changes: "..."
-    SuggestedEdits: |
-      - Modify method XYZ to improve efficiency
-      - Change ViewBinding approach
-
-edited:
-  - ViewHolderName: "..."
-    File: "..."
-    Changes: "..."
-    Suggestions: |
-      - Remove deprecated method XYZ
-      - Add a new parameter for better flexibility
+  
