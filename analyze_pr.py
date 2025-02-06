@@ -29,9 +29,12 @@ newly_added:
     File: "..."
     SuggestedPlacement: "Inside RecyclerView Adapter XYZ"
     SuggestedCode: |
-      class NewViewHolder extends RecyclerView.ViewHolder {
-          // Suggested implementation
-      }
+      class NewViewHolder extends RecyclerView.ViewHolder {{
+          public NewViewHolder(View itemView) {{
+              super(itemView);
+              // Initialize views properly here
+          }}
+      }}
 
 updated:
   - ViewHolderName: "..."
