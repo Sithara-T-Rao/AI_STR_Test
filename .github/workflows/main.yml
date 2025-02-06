@@ -33,9 +33,35 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Identify ViewHolder classes and view types
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..${{ github.head_ref }})
+          echo "Changed files: $CHANGED_FILES"
+          VIEWHOLDER_CLASSES=$(git diff origin/${{ github.base_ref }}..${{ github.head_ref }} -- '*.java' '*.kt' | grep -E 'class .*ViewHolder' | awk '{print $2}')
+          echo "ViewHolder Classes: $VIEWHOLDER_CLASSES"
+          VIEW_TYPES=$(git diff origin/${{ github.base_ref }}..${{ github.head_ref }} -- '*.java' '*.kt' | grep -E 'itemView\.' | awk -F '.' '{print $2}' | sort | uniq)
+          echo "View Types: $VIEW_TYPES"
+          if [[ -n "$VIEWHOLDER_CLASSES" || -n "$VIEW_TYPES" ]]; then
+            echo "::set-output name=view_changes::true"
+            echo "::set-output name=viewholder_classes::$VIEWHOLDER_CLASSES"
+            echo "::set-output name=view_types::$VIEW_TYPES"
+          else
+            echo "No ViewHolder-related changes detected."
+            echo "::set-output name=view_changes::false"
+          fi
+
       - uses: truongnh1992/gemini-ai-code-reviewer@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
           INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
+
+      - name: Summarize PR using Gemini model
+        if: steps.check-view-changes.outputs.view_changes == 'true'
+        run: |
+          SUMMARY=$(curl -X POST "https://api.gemini.com/summarize" \
+            -H "Authorization: Bearer ${{ secrets.GEMINI_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"ViewHolder Classes: ${{ steps.check-view-changes.outputs.viewholder_classes }}\nView Types: ${{ steps.check-view-changes.outputs.view_types }}\"}")
+          echo "PR Summary: $SUMMARY"
