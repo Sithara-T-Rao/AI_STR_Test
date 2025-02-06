@@ -1,38 +1,41 @@
-name: PR Analysis with Gemini AI
+name: Gemini AI Code Reviewer
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+permissions: write-all
 
 jobs:
-  analyze_pr:
+  gemini-code-review:
     runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/gemini-review')
     steps:
-      - name: Install dependencies
+      - name: PR Info
         run: |
-          pip install google
-          pip install google-generativeai
+          echo "Comment: ${{ github.event.comment.body }}"
+          echo "Issue Number: ${{ github.event.issue.number }}"
+          echo "Repository: ${{ github.repository }}"
 
-      - name: Set up Google API Key
-        run: echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> $GITHUB_ENV
-          
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Get PR Diff
+      - name: Get PR Details
+        id: pr
         run: |
-          PR_DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }})
-          echo "$PR_DIFF" > pr_diff.txt
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
+          echo "head_sha=$(echo $PR_JSON | jq -r .head.sha)" >> $GITHUB_OUTPUT
+          echo "base_sha=$(echo $PR_JSON | jq -r .base.sha)" >> $GITHUB_OUTPUT
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Analyze PR using Gemini AI
-        run: |
-          python analyze_pr.py > pr_analysis_output.yaml
-
-      - name: Comment on PR with AI Analysis
-        run: |
-          COMMENT_BODY=$(cat pr_analysis_output.yaml)
-          gh pr comment ${{ github.event.pull_request.number }} --body "### PR Analysis (AI-generated)\n\`\`\`yaml\n$COMMENT_BODY\n\`\`\`"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: truongnh1992/gemini-ai-code-reviewer@main
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
+          INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
