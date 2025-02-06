@@ -1,100 +1,30 @@
-name: Gemini AI Code Reviewer with View Types Check
+name: PR Analysis with Gemini AI
 
 on:
-  issue_comment:
-    types: [created]
-
-permissions: write-all
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
-  gemini-code-review:
+  analyze_pr:
     runs-on: ubuntu-latest
-    if: |
-      github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/gemini-review')
     steps:
-      - name: PR Info
-        run: |
-          echo "Comment: ${{ github.event.comment.body }}"
-          echo "Issue Number: ${{ github.event.issue.number }}"
-          echo "Repository: ${{ github.repository }}"
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Get PR Details
-        id: pr
+      - name: Get PR Diff
         run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
-          echo "head_sha=$(echo $PR_JSON | jq -r .head.sha)" >> $GITHUB_OUTPUT
-          echo "base_sha=$(echo $PR_JSON | jq -r .base.sha)" >> $GITHUB_OUTPUT
+          PR_DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }})
+          echo "$PR_DIFF" > pr_diff.txt
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: truongnh1992/gemini-ai-code-reviewer@main
-        id: gemini
-        with:
-          review_type: "detailed"
-          prompt: "Analyze the changes and identify any new or changed view types in RecyclerView Adapters. Summarize the affected viewholders and view types."
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
-          INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
-
-      - name: Print All Outputs
+      - name: Analyze PR using Gemini AI
         run: |
-          echo "Steps: ${{ toJson(steps) }}"
-          echo "Steps.Gemini: ${{ toJson(steps.gemini) }}"
-          echo "All Outputs: ${{ toJson(steps.gemini.outputs) }}"
-          echo "AI Review Output: ${{ steps.gemini.outputs.review }}"
+          python analyze_pr.py > pr_analysis_output.yaml
 
-      - name: Summarize View Types in PR Summary
-        id: summarize_view_types
+      - name: Comment on PR with AI Analysis
         run: |
-          echo "Starting to summarize affected viewholders and view types..."
-
-          # Generate the AI review output (PR summary)
-          review_output="${{ steps.gemini.outputs.review }}"
-
-          # Debugging: Print the AI review to see what it contains
-          echo "AI Review: $review_output"
-
-          # Use AI to determine relevant keywords related to ViewHolderFactory or view types
-          keywords=$(echo "$review_output" | grep -oP '\b(ViewHolderFactory|TYPE_\d+)\b' | sort | uniq)
-
-          # Initialize an empty array to hold matching keywords
-          matched_keywords=()
-
-          # Loop through each keyword and check if it exists in the review output
-          echo "Checking for the following keywords: ${keywords[*]}"
-          for keyword in ${keywords}; do
-            echo "Checking for keyword: $keyword"
-            if [[ "$review_output" == *"$keyword"* ]]; then
-              matched_keywords+=("$keyword")
-              echo "Keyword found: $keyword"
-            fi
-          done
-
-          # Check if any keywords were found and print them
-          if [ ${#matched_keywords[@]} -gt 0 ]; then
-            echo "Found View Types: ${matched_keywords[*]}"
-            echo "Found_View_Types=${matched_keywords[*]}" >> $GITHUB_ENV
-          else
-            echo "No relevant view types found in this PR."
-            echo "Found_View_Types=No relevant view types found" >> $GITHUB_ENV
-
-      - name: Post View Types to PR Comment
-        run: |
-          # Get the list of matched view types from the environment
-          view_types="${{ env.Found_View_Types }}"
-
-          if [[ "$view_types" == "No relevant view types found" ]]; then
-            echo "No changes in view types detected in this PR."
-            gh pr comment ${{ github.event.issue.pull_request.html_url }} --body "### PR Review Summary:\n\nNo new view types added or changed."
-          else
-            echo "Changes detected in view types: $view_types"
-            gh pr comment ${{ github.event.issue.pull_request.html_url }} --body "### PR Review Summary:\n\nChanges detected in the following view types: $view_types."
+          COMMENT_BODY=$(cat pr_analysis_output.yaml)
+          gh pr comment ${{ github.event.pull_request.number }} --body "### PR Analysis (AI-generated)\n\`\`\`yaml\n$COMMENT_BODY\n\`\`\`"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
