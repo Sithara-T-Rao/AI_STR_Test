@@ -60,6 +60,7 @@ class MyAdapter(private val dataList: List<String>) : RecyclerView.Adapter<Recyc
             holder.title.text = dataList[position]
             holder.subtitle.text = dataList[position] + " subtitleyz"
 
+
             holder.rv.layoutManager = LinearLayoutManager(holder.rv.context, RecyclerView.HORIZONTAL, false)
             val adapter = MyChildAdapter(childDataList)
             holder.rv.adapter = adapter
