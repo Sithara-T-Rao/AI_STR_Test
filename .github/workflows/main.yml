@@ -11,6 +11,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install google
+          pip install google-generativeai
           
       - name: Checkout code
         uses: actions/checkout@v4
