@@ -37,7 +37,7 @@ jobs:
         id: gemini
         with:
           review_type: "detailed"
-          prompt: "Analyze the changes and specifically check if any new view types were added in RecyclerView Adapters. If so, explicitly mention them in your review."
+          prompt: "Analyze the changes and identify any new or changed view types in RecyclerView Adapters. Summarize the affected viewholders and view types."
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
@@ -50,18 +50,10 @@ jobs:
           echo "All Outputs: ${{ toJson(steps.gemini.outputs) }}"
           echo "AI Review Output: ${{ steps.gemini.outputs.review }}"
 
-      - name: Check AI Review Output
+      - name: Summarize View Types in PR Summary
+        id: summarize_view_types
         run: |
-          # Debugging output: Print the AI review
-          echo "AI Review Output: ${{ steps.gemini.outputs.review }}"
-
-      - name: Check for View Types in PR Summary
-        id: check_view_types
-        run: |
-          echo "Starting to check for keywords related to ViewHolderFactory or view types..."
-
-          # Define the list of keywords related to ViewHolderFactory or view types
-          keywords=("ViewHolderFactory" "TYPE_0" "TYPE_1" "TYPE_2")
+          echo "Starting to summarize affected viewholders and view types..."
 
           # Generate the AI review output (PR summary)
           review_output="${{ steps.gemini.outputs.review }}"
@@ -69,12 +61,15 @@ jobs:
           # Debugging: Print the AI review to see what it contains
           echo "AI Review: $review_output"
 
+          # Use AI to determine relevant keywords related to ViewHolderFactory or view types
+          keywords=$(echo "$review_output" | grep -oP '\b(ViewHolderFactory|TYPE_\d+)\b' | sort | uniq)
+
           # Initialize an empty array to hold matching keywords
           matched_keywords=()
 
           # Loop through each keyword and check if it exists in the review output
           echo "Checking for the following keywords: ${keywords[*]}"
-          for keyword in "${keywords[@]}"; do
+          for keyword in ${keywords}; do
             echo "Checking for keyword: $keyword"
             if [[ "$review_output" == *"$keyword"* ]]; then
               matched_keywords+=("$keyword")
