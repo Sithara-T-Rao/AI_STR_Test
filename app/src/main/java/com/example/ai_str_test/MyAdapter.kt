@@ -66,6 +66,8 @@ class MyAdapter(private val dataList: List<String>) : RecyclerView.Adapter<Recyc
 
 
 
+
+
     }
 
     override fun getItemViewType(position: Int): Int {
