@@ -33,13 +33,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Fetch Base and Head Branches
+        run: |
+          git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
+          git fetch origin ${{ github.head_ref }}:${{ github.head_ref }}
+
       - name: Identify ViewHolder classes and view types
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..${{ github.head_ref }})
+          CHANGED_FILES=$(git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }})
           echo "Changed files: $CHANGED_FILES"
-          VIEWHOLDER_CLASSES=$(git diff origin/${{ github.base_ref }}..${{ github.head_ref }} -- '*.java' '*.kt' | grep -E 'class .*ViewHolder' | awk '{print $2}')
+          VIEWHOLDER_CLASSES=$(git diff ${{ github.base_ref }}..${{ github.head_ref }} -- '*.java' '*.kt' | grep -E 'class .*ViewHolder' | awk '{print $2}')
           echo "ViewHolder Classes: $VIEWHOLDER_CLASSES"
-          VIEW_TYPES=$(git diff origin/${{ github.base_ref }}..${{ github.head_ref }} -- '*.java' '*.kt' | grep -E 'itemView\.' | awk -F '.' '{print $2}' | sort | uniq)
+          VIEW_TYPES=$(git diff ${{ github.base_ref }}..${{ github.head_ref }} -- '*.java' '*.kt' | grep -E 'itemView\.' | awk -F '.' '{print $2}' | sort | uniq)
           echo "View Types: $VIEW_TYPES"
           if [[ -n "$VIEWHOLDER_CLASSES" || -n "$VIEW_TYPES" ]]; then
             echo "::set-output name=view_changes::true"
