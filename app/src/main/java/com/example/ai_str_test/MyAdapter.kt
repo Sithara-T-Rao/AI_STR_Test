@@ -59,7 +59,6 @@ class MyAdapter(private val dataList: List<String>) : RecyclerView.Adapter<Recyc
         } else if(holder is MyTitleSubtitleViewHolder){
             holder.title.text = dataList[position]
             holder.subtitle.text = dataList[position] + " subtitle"
-
             holder.rv.layoutManager = LinearLayoutManager(holder.rv.context, RecyclerView.HORIZONTAL, false)
             val adapter = MyChildAdapter(childDataList)
             holder.rv.adapter = adapter
