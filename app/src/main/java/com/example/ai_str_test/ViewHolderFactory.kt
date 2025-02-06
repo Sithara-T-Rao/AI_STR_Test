@@ -4,4 +4,5 @@ object  ViewHolderFactory {
         val TYPE_0 = 0
         val TYPE_1 = 1
         val TYPE_2 = 2
+        val TYPE_3 = 3
 }

@@ -11,7 +11,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class MyAdapter(private val dataList: List<String>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    val childDataList = arrayListOf<String>()
+    init{
 
+        for (i in 1..20) {
+            childDataList.add("Child Item $i")
+        }
+    }
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(R.id.textView)
         val rv: RecyclerView = itemView.findViewById(R.id.child_rv)
@@ -43,34 +49,18 @@ class MyAdapter(private val dataList: List<String>) : RecyclerView.Adapter<Recyc
         if(holder is MyViewHolder) {
             holder.textView.text = dataList[position]
             holder.rv.layoutManager = LinearLayoutManager(holder.rv.context, RecyclerView.HORIZONTAL, false)
-            val dataList = arrayListOf<String>()
-
-            for (i in 1..20) {
-                dataList.add("Child Item $i")
-            }
-
-            val adapter = MyChildAdapter(dataList)
+            val adapter = MyChildAdapter(childDataList)
             holder.rv.adapter = adapter
         } else if(holder is MyImageViewHolder){
             holder.imageView.setImageResource( R.drawable.ic_launcher_background)
             holder.rv.layoutManager = LinearLayoutManager(holder.rv.context, RecyclerView.HORIZONTAL, false)
-            val dataList = arrayListOf<String>()
-
-            for (i in 1..20) {
-                dataList.add("Child Item $i")
-            }
-            val adapter = MyChildAdapter(dataList)
+            val adapter = MyChildAdapter(childDataList)
             holder.rv.adapter = adapter
         } else if(holder is MyTitleSubtitleViewHolder){
             holder.title.text = dataList[position]
             holder.subtitle.text = dataList[position] + " subtitle"
             holder.rv.layoutManager = LinearLayoutManager(holder.rv.context, RecyclerView.HORIZONTAL, false)
-            val dataList = arrayListOf<String>()
-
-            for (i in 1..20) {
-                dataList.add("Child Item $i")
-            }
-            val adapter = MyChildAdapter(dataList)
+            val adapter = MyChildAdapter(childDataList)
             holder.rv.adapter = adapter
         }
 
