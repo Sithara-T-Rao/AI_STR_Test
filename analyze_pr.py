@@ -47,7 +47,7 @@ edited:
 ```"""
 
 # Generate the analysis
-response = model.generate_text(prompt)
+response = model.generate_content(prompt)
 
 # Save the output to a YAML file
 with open("pr_analysis_output.yaml", "w") as output_file:
