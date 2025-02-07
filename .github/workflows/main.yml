@@ -33,27 +33,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Fetch Base and Head Branches
-        run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          git fetch origin ${{ github.head_ref }} --depth=1
-          git checkout -b base_branch origin/${{ github.base_ref }}
-          git checkout ${{ github.head_ref }}
-
-    
-
       - uses: truongnh1992/gemini-ai-code-reviewer@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
           INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
-
-      - name: Summarize PR using Gemini model
-        if: steps.check-view-changes.outputs.view_changes == 'true'
-        run: |
-          SUMMARY=$(curl -X POST "https://api.gemini.com/summarize" \
-            -H "Authorization: Bearer ${{ secrets.GEMINI_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"text\": \"ViewHolder Classes: ${{ steps.check-view-changes.outputs.viewholder_classes }}\nView Types: ${{ steps.check-view-changes.outputs.view_types }}\"}")
-          echo "PR Summary: $SUMMARY"
