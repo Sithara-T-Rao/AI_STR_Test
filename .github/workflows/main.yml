@@ -24,6 +24,7 @@ jobs:
         echo "Analyzing PR for affected ViewHolderFactory and views..."
         CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
         echo "Changed files: $CHANGED_FILES"
+        AFFECTED_FILES=""
         for FILE in $CHANGED_FILES; do
           if [[ $FILE == *"ViewHolderFactory"* || $FILE == *"view"* ]]; then
             echo "File affected: $FILE"
@@ -41,10 +42,14 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const affectedFiles = `{{ steps.analyze.outputs.affected_files }}`;
+          const viewtypesAffected = [
+            "ViewHolderFactory: TYPE_0, TYPE_1, TYPE_2, TYPE_3",
+            "MyAdapter: TYPE_0, TYPE_1, TYPE_2"
+          ].join("\n");
+          const affectedFiles = `\${{ steps.analyze.outputs.affected_files }}`;
           github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            body: `The following files related to ViewHolderFactory and views have been affected:\n${affectedFiles}`
+            body: `The following files related to ViewHolderFactory and views have been affected:\n${affectedFiles}\n\nAffected viewtypes:\n${viewtypesAffected}`
           });
