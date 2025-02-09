@@ -16,6 +16,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Octokit
+        run: npm install @octokit/rest
+
       - name: Get PR Diff (Using GitHub API)
         id: pr_diff
         uses: actions/github-script@v6
@@ -31,7 +34,7 @@ jobs:
               repo: context.repo.repo,
               pull_number: prNumber,
               mediaType: {
-                format: 'diff' // Get the diff in text format
+                format: 'diff'
               }
             });
 
@@ -52,10 +55,10 @@ jobs:
           script: |
             const { Octokit } = require("@octokit/rest");
             const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
-            const diff = `${{ steps.pr_diff.outputs.diff }}`; // Use the actual diff from the API
+            const diff = `${{ steps.pr_diff.outputs.diff }}`;
             const model = 'gemini-pro';
 
-            const prompt = `Summarize these code changes for a pull request.  Provide a single, overall summary. Do not list individual files. Focus on the overall impact.  Analyze the provided code diff to identify any affected ViewHolders and Views, and mention them in the summary.  Be precise and accurate.\n\`\`\`diff\n${diff}\n\`\`\``;
+            const prompt = `Summarize these code changes for a pull request.  Provide a single, overall summary. Do not list individual files. Focus on the overall impact. Analyze the provided code diff to identify any affected ViewHolders and Views, and mention them in the summary. Be precise and accurate.\n\`\`\`diff\n${diff}\n\`\`\``;
 
             const response = await octokit.request('POST /v1/models/{model}:generateText', {
               model: model,
