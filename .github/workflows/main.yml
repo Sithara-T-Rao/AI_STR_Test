@@ -5,7 +5,7 @@ on:
     types: [created]
 
 permissions:
-  pull_requests: write  # Correct placement of permissions
+  pull_requests: write
 
 jobs:
   gemini-code-review:
@@ -44,7 +44,7 @@ jobs:
           GEMINI_MODEL: gemini-1.5-pro-002 # Or gemini-1.5-flash-002
 
       - name: Post Comment
-        uses: actions/github-script@v6
+        uses: actions/github-script@v6  # Correct version!
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
