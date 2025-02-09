@@ -2,22 +2,40 @@ name: Code Review
 
 on:
   pull_request:
-    branches: [main] # or your main branch name
+    branches: [main]
 
 jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: truongnh1992/gemini-ai-code-reviewer@main
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Gemini Code Reviewer
+        id: gemini_review  # Give the step an ID
+        uses: truongnh1992/gemini-ai-code-reviewer@main
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }} # Important!
-          # Optional: You can customize the prompt if needed
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             Summarize this pull request, focusing on changes related to RecyclerView adapters.
             Specifically, identify any modifications to getItemViewType methods and associated ViewHolders.
             If possible, list the affected classes and methods.
 
-          # Optional: You can specify a list of files/directories to include or exclude
-          # include: 'src/**/*.java'
-          # exclude: '**/test/**'
+      - name: Debug Output (Print to console)
+        run: |
+          echo "Gemini Output:"
+          echo "${{ steps.gemini_review.outputs.review_summary }}"  # Access output
+
+      - name: Post Comment (Only if review_summary exists)
+        if: steps.gemini_review.outputs.review_summary != ''  # Check if empty
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const review_summary = `${{ steps.gemini_review.outputs.review_summary }}`;
+            return github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Code Review Summary\n${review_summary}`
+            });
