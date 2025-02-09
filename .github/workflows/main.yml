@@ -12,13 +12,30 @@ jobs:
       contains(github.event.comment.body, '/gemini-review')
 
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Get PR Diff
-        run: git diff --patch > diff.txt
+      - name: Get PR Diff (Using GitHub API)
+        id: pr_diff
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { Octokit } = require("@octokit/rest");
+            const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
+
+            const prNumber = context.issue.number;
+            const { data: diff } = await octokit.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              mediaType: {
+                format: 'diff' // Get the diff in text format
+              }
+            });
+
+            core.setOutput('diff', diff);
 
       - name: Authenticate with Google Cloud (Essential!)
         uses: google-github-actions/auth@v1
@@ -35,13 +52,15 @@ jobs:
           script: |
             const { Octokit } = require("@octokit/rest");
             const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
-            const diff = fs.readFileSync('diff.txt', 'utf8');
-            const model = 'gemini-pro'; // Or gemini-1.5-flash-002, etc.
+            const diff = `${{ steps.pr_diff.outputs.diff }}`; // Use the actual diff from the API
+            const model = 'gemini-pro';
+
+            const prompt = `Summarize these code changes for a pull request.  Provide a single, overall summary. Do not list individual files. Focus on the overall impact.  Analyze the provided code diff to identify any affected ViewHolders and Views, and mention them in the summary.  Be precise and accurate.\n\`\`\`diff\n${diff}\n\`\`\``;
 
             const response = await octokit.request('POST /v1/models/{model}:generateText', {
               model: model,
               prompt: {
-                text: `Summarize these code changes for a pull request. Provide a *single, overall summary* of the changes and the purpose of the PR.  Do not list individual files.  Focus on the overall impact of the changes.\n\`\`\`diff\n${diff}\n\`\`\``
+                text: prompt
               }
             });
 
