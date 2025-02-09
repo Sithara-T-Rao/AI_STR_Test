@@ -19,6 +19,7 @@ jobs:
         java-version: '11'
 
     - name: Analyze PR for affected ViewHolderFactory and views
+      id: analyze
       run: |
         echo "Analyzing PR for affected ViewHolderFactory and views..."
         CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
@@ -26,8 +27,24 @@ jobs:
         for FILE in $CHANGED_FILES; do
           if [[ $FILE == *"ViewHolderFactory"* || $FILE == *"view"* ]]; then
             echo "File affected: $FILE"
+            AFFECTED_FILES+="$FILE\n"
           fi
         done
+        echo "::set-output name=affected_files::$AFFECTED_FILES"
       shell: /usr/bin/bash -e {0}
       env:
         KOTLIN_HOME: /opt/hostedtoolcache/kotlin/2.0.21/x64/kotlinc
+
+    - name: Comment on PR
+      if: steps.analyze.outputs.affected_files != ''
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const affectedFiles = `{{ steps.analyze.outputs.affected_files }}`;
+          const { context } = github;
+          github.rest.issues.createComment({
+            ...context.repo,
+            issue_number: context.issue.number,
+            body: `The following files related to ViewHolderFactory and views have been affected:\n${affectedFiles}`
+          });
