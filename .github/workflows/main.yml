@@ -1,17 +1,57 @@
-name: GPT Commits summarizer
-# Summary: This action will write a comment about every commit in a pull request, as well as generate a summary for every file that was modified and add it to the review page, compile a PR summary from all commit summaries and file diff summaries, and delete outdated code review comments
+name: Gemini AI Code Reviewer
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull_requests: write # Grant permission to comment on PRs
 
 jobs:
-  summarize:
-    runs-on: self-hosted
-    permissions: write-all  # Some repositories need this line
+  gemini-code-review:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/gemini-review')
 
     steps:
-      - uses: KanHarI/gpt-commit-summarizer@master
+      - name: PR Info (for debugging)
+        run: |
+          echo "Comment: ${{ github.event.comment.body }}"
+          echo "Issue Number: ${{ github.event.issue.number }}"
+          echo "Repository: ${{ github.repository }}"
+
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Important for getting the full diff
+
+      - name: Get PR Details
+        id: pr
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
+          echo "head_sha=$(echo $PR_JSON | jq -r .head.sha)" >> $GITHUB_OUTPUT
+          echo "base_sha=$(echo $PR_JSON | jq -r .base.sha)" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Generate Summary (Gemini)
+        id: gemini_summary # Add an ID to the step
+        uses: truongnh1992/gemini-ai-code-reviewer@latest
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-1.5-pro-002 # Or gemini-1.5-flash-002, or other model
+
+      - name: Post Comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const summary = `${{ steps.gemini_summary.outputs.review_summary }}`; // Access output correctly
+            return github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Gemini Code Review\n${summary}`
+            });
