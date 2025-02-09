@@ -2,14 +2,14 @@ name: PR Summary
 
 on:
   pull_request:
-    branches: [main] # Or your target branch
-    types: [opened, synchronize, reopened] # Important: Add these triggers
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 jobs:
   summarize:
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write # Required to comment on PRs
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v3
@@ -19,10 +19,10 @@ jobs:
 
       - name: Generate Summary (Gemini)
         id: gemini_summary
-        uses: google-github-actions/generate-pull-request-summary@v1
+        uses: openai/action-openai@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          model: gemini
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }} # Crucial!
+          model: gemini-pro # or gemini
           prompt: |
             Summarize these code changes for a pull request. Focus on the key changes and the purpose of the PR.
             ```diff
@@ -34,7 +34,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const summary = `${{ steps.gemini_summary.outputs.summary }}`;
+            const summary = `${{ steps.gemini_summary.outputs.completion }}`;
             return github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
