@@ -5,7 +5,7 @@ on:
     types: [created]
 
 permissions:
-  pull_requests: write # Grant permission to comment on PRs
+  pull_requests: write  # Correct placement of permissions
 
 jobs:
   gemini-code-review:
@@ -24,7 +24,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Important for getting the full diff
+          fetch-depth: 0
 
       - name: Get PR Details
         id: pr
@@ -36,19 +36,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate Summary (Gemini)
-        id: gemini_summary # Add an ID to the step
+        id: gemini_summary
         uses: truongnh1992/gemini-ai-code-reviewer@latest
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-1.5-pro-002 # Or gemini-1.5-flash-002, or other model
+          GEMINI_MODEL: gemini-1.5-pro-002 # Or gemini-1.5-flash-002
 
       - name: Post Comment
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const summary = `${{ steps.gemini_summary.outputs.review_summary }}`; // Access output correctly
+            const summary = `${{ steps.gemini_summary.outputs.review_summary }}`;
             return github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
