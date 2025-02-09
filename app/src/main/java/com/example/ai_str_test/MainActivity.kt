@@ -35,5 +35,6 @@ class MainActivity : ComponentActivity() {
         lottie.setAnimationFromUrl("https://webappsstatic.paytm.com/growth/assets/home/snow.lottie")
         lottie.playAnimation()
     }
+
 }
 
