@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
     private fun lottie() {
         val lottie = findViewById<LottieAnimationView>(R.id.animationView)
         lottie.setAnimationFromUrl("https://webappsstatic.paytm.com/growth/assets/home/snow.lottie")
-        lottie.playAnimation()
+       // lottie.playAnimation()
     }
 
 }
