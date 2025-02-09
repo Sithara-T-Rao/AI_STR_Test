@@ -4,61 +4,38 @@ on:
   issue_comment:
     types: [created]
 
+permissions: write-all
+
 jobs:
   gemini-code-review:
     runs-on: ubuntu-latest
-
     if: |
       github.event.issue.pull_request &&
       contains(github.event.comment.body, '/gemini-review')
-
     steps:
-      - uses: actions/checkout@v3
+      - name: PR Info
+        run: |
+          echo "Comment: ${{ github.event.comment.body }}"
+          echo "Issue Number: ${{ github.event.issue.number }}"
+          echo "Repository: ${{ github.repository }}"
+
+      - name: Checkout Repo
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Get PR Diff
-        run: git diff --patch > diff.txt
-
-      - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }} # Your Google Cloud credentials
-
-      - name: Generate Summary (Gemini via Vertex AI API)
-        id: gemini_summary
-        uses: actions/github-script@v6
+      - name: Get PR Details
+        id: pr
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
+          echo "head_sha=$(echo $PR_JSON | jq -r .head.sha)" >> $GITHUB_OUTPUT
+          echo "base_sha=$(echo $PR_JSON | jq -r .base.sha)" >> $GITHUB_OUTPUT
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} # Your Gemini API key
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: truongnh1992/gemini-ai-code-reviewer@main
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { Octokit } = require("@octokit/rest");
-            const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
-
-            const diff = fs.readFileSync('diff.txt', 'utf8');
-
-            const model = 'gemini-pro'; // or gemini-1.5-flash-002, etc.
-
-            const response = await octokit.request('POST /v1/models/{model}:generateText', {
-              model: model,
-              prompt: {
-                text: `Summarize these code changes for a pull request. Focus on the key changes and the purpose of the PR.\n\`\`\`diff\n${diff}\n\`\`\``
-              }
-            });
-
-            const summary = response.data.candidates[0].text;
-            core.setOutput('summary', summary);
-
-      - name: Post Comment
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const summary = `${{ steps.gemini_summary.outputs.summary }}`;
-            return github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Gemini Code Review\n${summary}`
-            });
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
+          INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
