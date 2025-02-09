@@ -1,41 +1,43 @@
-name: Code Review
+name: PR Summary
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main] # Or your target branch
+    types: [opened, synchronize, reopened] # Important: Add these triggers
 
 jobs:
-  review:
+  summarize:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    permissions:
+      pull-requests: write # Required to comment on PRs
 
-      - name: Run Gemini Code Reviewer
-        id: gemini_review  # Give the step an ID
-        uses: truongnh1992/gemini-ai-code-reviewer@main
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get PR Diff
+        run: git diff --patch > diff.txt
+
+      - name: Generate Summary (Gemini)
+        id: gemini_summary
+        uses: google-github-actions/generate-pull-request-summary@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          model: gemini
           prompt: |
-            Summarize this pull request, focusing on changes related to RecyclerView adapters.
-            Specifically, identify any modifications to getItemViewType methods and associated ViewHolders.
-            If possible, list the affected classes and methods.
+            Summarize these code changes for a pull request. Focus on the key changes and the purpose of the PR.
+            ```diff
+            $(cat diff.txt)
+            ```
 
-      - name: Debug Output (Print to console)
-        run: |
-          echo "Gemini Output:"
-          echo "${{ steps.gemini_review.outputs.review_summary }}"  # Access output
-
-      - name: Post Comment (Only if review_summary exists)
-        if: steps.gemini_review.outputs.review_summary != ''  # Check if empty
+      - name: Post Comment
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const review_summary = `${{ steps.gemini_review.outputs.review_summary }}`;
+            const summary = `${{ steps.gemini_summary.outputs.summary }}`;
             return github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Code Review Summary\n${review_summary}`
+              body: `## PR Summary (Gemini)\n${summary}`
             });
