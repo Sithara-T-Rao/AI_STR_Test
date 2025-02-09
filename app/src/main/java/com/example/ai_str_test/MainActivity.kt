@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
 
 
 class MainActivity : ComponentActivity() {
@@ -11,6 +12,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 //        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+      //  setContentView(R.layout.lottie)
+       // lottie()
 
         val recyclerView : RecyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -26,5 +29,11 @@ class MainActivity : ComponentActivity() {
 
 
     }
+
+//    private fun lottie() {
+//        val lottie = findViewById<LottieAnimationView>(R.id.animationView)
+//        lottie.setAnimationFromUrl("https://webappsstatic.paytm.com/growth/assets/home/snow.lottie")
+//        lottie.playAnimation()
+//    }
 }
 

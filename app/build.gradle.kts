@@ -68,4 +68,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
+    implementation("com.airbnb.android:lottie:3.4.0")
+
 }
