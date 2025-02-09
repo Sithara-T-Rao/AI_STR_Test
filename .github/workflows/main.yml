@@ -16,16 +16,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Octokit
-        run: npm install @octokit/rest
-
       - name: Get PR Diff (Using GitHub API)
         id: pr_diff
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { Octokit } = require("@octokit/rest");
+            const { Octokit } = await import("@octokit/rest"); // Dynamic import
             const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
 
             const prNumber = context.issue.number;
@@ -53,7 +50,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { Octokit } = require("@octokit/rest");
+            const { Octokit } = await import("@octokit/rest"); // Dynamic import
             const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
             const diff = `${{ steps.pr_diff.outputs.diff }}`;
             const model = 'gemini-pro';
