@@ -1,43 +1,17 @@
-name: PR Summary
+name: GPT Commits summarizer
+# Summary: This action will write a comment about every commit in a pull request, as well as generate a summary for every file that was modified and add it to the review page, compile a PR summary from all commit summaries and file diff summaries, and delete outdated code review comments
 
 on:
   pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize]
 
 jobs:
   summarize:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
+    runs-on: self-hosted
+    permissions: write-all  # Some repositories need this line
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Get PR Diff
-        run: git diff --patch > diff.txt
-
-      - name: Generate Summary (Gemini)
-        id: gemini_summary
-        uses: openai/action-openai@v1
-        with:
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }} # Crucial!
-          model: gemini-pro # or gemini
-          prompt: |
-            Summarize these code changes for a pull request. Focus on the key changes and the purpose of the PR.
-            ```diff
-            $(cat diff.txt)
-            ```
-
-      - name: Post Comment
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const summary = `${{ steps.gemini_summary.outputs.completion }}`;
-            return github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## PR Summary (Gemini)\n${summary}`
-            });
+      - uses: KanHarI/gpt-commit-summarizer@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
