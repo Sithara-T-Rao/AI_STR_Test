@@ -1,41 +1,33 @@
-name: Gemini AI Code Reviewer
+name: Analyze PR for Affected ViewHolderFactory and Views
 
 on:
-  issue_comment:
-    types: [created]
-
-permissions: write-all
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
-  gemini-code-review:
+  analyze_pr:
     runs-on: ubuntu-latest
-    if: |
-      github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/gemini-review')
     steps:
-      - name: PR Info
-        run: |
-          echo "Comment: ${{ github.event.comment.body }}"
-          echo "Issue Number: ${{ github.event.issue.number }}"
-          echo "Repository: ${{ github.repository }}"
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+    - name: Setup Java
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
 
-      - name: Get PR Details
-        id: pr
-        run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
-          echo "head_sha=$(echo $PR_JSON | jq -r .head.sha)" >> $GITHUB_OUTPUT
-          echo "base_sha=$(echo $PR_JSON | jq -r .base.sha)" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Setup Kotlin
+      uses: fwilhe2/setup-kotlin@v1
 
-      - uses: truongnh1992/gemini-ai-code-reviewer@main
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-1.5-pro-002 # Optional, default is `gemini-1.5-flash-002`
-          INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
+    - name: Analyze PR
+      run: |
+        echo "Analyzing PR for affected ViewHolderFactory and views..."
+        CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+        
+        echo "Changed files: $CHANGED_FILES"
+
+        for FILE in $CHANGED_FILES; do
+          if [[ $FILE == *"ViewHolderFactory"* || $FILE == *"view"* ]]; then
+            echo "File affected: $FILE"
+          fi
+        done
