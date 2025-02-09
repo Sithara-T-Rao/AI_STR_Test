@@ -19,7 +19,7 @@ jobs:
     - name: Analyze PR for affected ViewHolderFactory and views
       run: |
         echo "Analyzing PR for affected ViewHolderFactory and views..."
-        CHANGED_FILES=$(git diff --name-only <valid_commit_hash_1> <valid_commit_hash_2>)
+        CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
         echo "Changed files: $CHANGED_FILES"
         for FILE in $CHANGED_FILES; do
           if [[ $FILE == *"ViewHolderFactory"* || $FILE == *"view"* ]]; then
