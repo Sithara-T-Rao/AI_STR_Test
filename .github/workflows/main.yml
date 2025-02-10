@@ -11,10 +11,22 @@ jobs:
       github.event.issue.pull_request &&
       contains(github.event.comment.body, '/gemini-review')
 
+    permissions:  # Permissions moved inside the job
+      pull_requests: write
+
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Install Node.js and npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Get PR Diff (Using GitHub API)
         id: pr_diff
@@ -22,7 +34,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { Octokit } = await import("@octokit/rest"); // Dynamic import
+            const { Octokit } = await import("@octokit/rest");
             const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
 
             const prNumber = context.issue.number;
@@ -50,7 +62,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { Octokit } = await import("@octokit/rest"); // Dynamic import
+            const { Octokit } = await import("@octokit/rest");
             const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
             const diff = `${{ steps.pr_diff.outputs.diff }}`;
             const model = 'gemini-pro';
