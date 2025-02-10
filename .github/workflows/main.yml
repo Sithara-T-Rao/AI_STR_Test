@@ -16,14 +16,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Node.js and npm
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install # Use npm install
 
       - name: Get PR Diff (Using GitHub API)
         id: pr_diff
