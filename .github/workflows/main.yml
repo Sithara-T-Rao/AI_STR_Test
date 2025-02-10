@@ -11,9 +11,6 @@ jobs:
       github.event.issue.pull_request &&
       contains(github.event.comment.body, '/gemini-review')
 
-    permissions:  # Permissions moved inside the job
-      pull_requests: write
-
     steps:
       - uses: actions/checkout@v3
         with:
