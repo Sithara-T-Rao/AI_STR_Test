@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
         recyclerView.adapter = adapter
 
+
     }
 
 
