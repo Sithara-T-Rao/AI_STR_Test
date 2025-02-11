@@ -10,6 +10,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Install Dependencies
+        run: pip install -r requirements.txt  # ✅ Install OpenAI library
+
       - name: Fetch PR Diff
         run: gh pr diff ${{ github.event.pull_request.number }} > diff.txt
         env:
