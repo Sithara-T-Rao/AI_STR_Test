@@ -1,29 +1,40 @@
-name: PR RecyclerView Analysis
+name: Copilot Integration
+
 on:
   pull_request:
     types: [opened, synchronize]
 
 jobs:
-  analyze_pr:
+  analyze-changes:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Install Dependencies
-        run: pip install -r requirements.txt  # ✅ Install OpenAI library
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
 
-      - name: Fetch PR Diff
-        run: gh pr diff ${{ github.event.pull_request.number }} > diff.txt
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install OpenAI
+      run: pip install openai
 
-      - name: Run Analysis Script
-        run: python analyze_pr.py
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    - name: Get PR Diff
+      run: |
+        git diff origin/main...HEAD > diff.txt
 
-      - name: Post Analysis Comment
-        run: gh pr comment ${{ github.event.pull_request.number }} --body "$(cat analysis.txt)"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Analyze View and ViewHolder Changes
+      run: |
+        python analyze_pr.py
+
+    - name: Comment on PR with changes
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        header: View and ViewHolder Changes
+        message: |
+          The following analysis was performed on the PR changes:
+          ```
+          $(cat analysis.txt)
+          ```
