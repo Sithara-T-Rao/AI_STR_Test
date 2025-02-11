@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
 
         for (i in 1..20) {
             dataList.add("Widget TitleHIIIII $i")
+
         }
 
         val adapter = MyAdapter(dataList)
