@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val adapter = MyAdapter(dataList)
+
         recyclerView.adapter = adapter
 
     }
