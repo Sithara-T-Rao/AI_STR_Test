@@ -1,0 +1,36 @@
+name: Copilot Integration
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  check-views:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Java
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '11'
+
+    - name: Analyze View and ViewHolder Changes
+      run: |
+        git diff origin/main...HEAD -- app/src/main/java/com/example/ai_str_test/MyAdapter.kt
+        git diff origin/main...HEAD -- app/src/main/java/com/example/ai_str_test/ViewHolderFactory.kt
+
+    - name: Comment on PR with changes
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        header: View and ViewHolder Changes
+        message: |
+          The following changes were detected in View and ViewHolder classes:
+          ```
+          $(git diff origin/main...HEAD -- app/src/main/java/com/example/ai_str_test/MyAdapter.kt)
+          $(git diff origin/main...HEAD -- app/src/main/java/com/example/ai_str_test/ViewHolderFactory.kt)
+          ```
