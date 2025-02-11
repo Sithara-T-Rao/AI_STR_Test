@@ -1,89 +1,26 @@
-name: Gemini AI Code Reviewer
-
+name: PR RecyclerView Analysis
 on:
-  issue_comment:
-    types: [created]
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
-  gemini-code-review:
+  analyze_pr:
     runs-on: ubuntu-latest
-    if: |
-      github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/gemini-review')
-
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install # Use npm install
-
-      - name: Get PR Diff (Using GitHub API)
-        id: pr_diff
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { Octokit } = await import("@octokit/rest");
-            const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
-
-            const prNumber = context.issue.number;
-            const { data: diff } = await octokit.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              mediaType: {
-                format: 'diff'
-              }
-            });
-
-            core.setOutput('diff', diff);
-
-      - name: Authenticate with Google Cloud (Essential!)
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-
-      - name: Generate Summary (Gemini via Vertex AI API)
-        id: gemini_summary
-        uses: actions/github-script@v6
+      - name: Fetch PR Diff
+        run: gh pr diff ${{ github.event.pull_request.number }} > diff.txt
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { Octokit } = await import("@octokit/rest");
-            const octokit = new Octokit({ auth: `${process.env.GITHUB_TOKEN}` });
-            const diff = `${{ steps.pr_diff.outputs.diff }}`;
-            const model = 'gemini-pro';
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            const prompt = `Summarize these code changes for a pull request.  Provide a single, overall summary. Do not list individual files. Focus on the overall impact. Analyze the provided code diff to identify any affected ViewHolders and Views, and mention them in the summary. Be precise and accurate.\n\`\`\`diff\n${diff}\n\`\`\``;
+      - name: Run Analysis Script
+        run: python analyze_pr.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-            const response = await octokit.request('POST /v1/models/{model}:generateText', {
-              model: model,
-              prompt: {
-                text: prompt
-              }
-            });
-
-            const summary = response.data.candidates[0].text;
-            core.setOutput('summary', summary);
-
-      - name: Post Comment
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const summary = `${{ steps.gemini_summary.outputs.summary }}`;
-            return github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Gemini Code Review\n${summary}`
-            });
+      - name: Post Analysis Comment
+        run: gh pr comment ${{ github.event.pull_request.number }} --body "$(cat analysis.txt)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
