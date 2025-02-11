@@ -1,54 +1,37 @@
+import openai
 import os
-import google.generativeai as genai
 
-# Configure Gemini API
-api_key = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-pro")
+# Load API Key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Read PR diff
-with open("pr_diff.txt", "r") as file:
-    pr_diff = file.read()
+with open("diff.txt", "r", encoding="utf-8") as f:
+    diff_content = f.read()
 
-# Define the AI prompt (properly closed triple quotes)
-prompt = """Analyze the following GitHub PR diff and classify ViewHolders and ViewTypes into:
-- Newly added (with file path and suggested placement)
-- Updated (with what was changed)
-- Edited (with recommendations on what to add/remove)
+# Define the prompt
+prompt = f"""
+Analyze the following PR diff. Identify the changed RecyclerView item types and the affected ViewHolders.
 
-Provide the output in **YAML format**.
+{diff_content}
 
-PR Diff:
-{pr_diff}
+Summarize in the format:
+- **Changed Item Types**: [List]
+- **Affected ViewHolders**: [List]
+- **Key Modifications**: [Brief summary]
+"""
 
-Format:
-```yaml
-newly_added:
-  - ViewHolderName: "..."
-    File: "..."
-    SuggestedPlacement: "Inside RecyclerView Adapter XYZ"
-    SuggestedCode: |
-      class NewViewHolder extends RecyclerView.ViewHolder {
-          public NewViewHolder(View itemView) {
-              super(itemView);
-              // Initialize views properly here
-          }
-      }
+# Call OpenAI API
+response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": "You are an expert in Android development."},
+        {"role": "user", "content": prompt}
+    ]
+)
 
-updated:
-  - ViewHolderName: "..."
-    File: "..."
-    Changes: "Detailed description of what was changed"
+# Get response text
+analysis_result = response["choices"][0]["message"]["content"]
 
-edited:
-  - ViewHolderName: "..."
-    File: "..."
-    Recommendations: "Suggestions on what to add/remove"
-```"""
-
-# Generate the analysis
-response = model.generate_content(prompt)
-
-# Save the output to a YAML file
-with open("pr_analysis_output.yaml", "w") as output_file:
-    output_file.write(response.text)
+# Save analysis output
+with open("analysis.txt", "w", encoding="utf-8") as f:
+    f.write(analysis_result)
