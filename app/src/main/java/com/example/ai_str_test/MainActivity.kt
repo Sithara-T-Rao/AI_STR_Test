@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         val dataList = arrayListOf<String>()
 
         for (i in 1..20) {
-            dataList.add("Widget Title $i")
+            dataList.add("Widget TitleHIIIII $i")
         }
 
         val adapter = MyAdapter(dataList)
