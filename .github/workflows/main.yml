@@ -21,13 +21,13 @@ jobs:
       run: pip install pygithub
 
     - name: Analyze PR
-      run: python .github/analyze_pr.py
+      run: python analyze_pr.py
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
 
     - name: Comment on PR
-      run: python .github/comment_pr.py
+      run: python comment_pr.py
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
