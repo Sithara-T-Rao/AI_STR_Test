@@ -1,15 +1,15 @@
-name: Copilot Integration
+name: PR Commenter
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
 
 jobs:
-  analyze-changes:
+  analyze-pr:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v2
 
     - name: Set up Python
@@ -17,24 +17,17 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install OpenAI
-      run: pip install openai
+    - name: Install dependencies
+      run: pip install pygithub
 
-    - name: Get PR Diff
-      run: |
-        git diff origin/main...HEAD > diff.txt
-
-    - name: Analyze View and ViewHolder Changes
-      run: |
-        python analyze_pr.py
-
-    - name: Comment on PR with changes
-      uses: marocchino/sticky-pull-request-comment@v2
-      with:
+    - name: Analyze PR
+      run: python .github/scripts/analyze_pr.py
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        header: View and ViewHolder Changes
-        message: |
-          The following analysis was performed on the PR changes:
-          ```
-          $(cat analysis.txt)
-          ```
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+
+    - name: Comment on PR
+      run: python .github/scripts/comment_pr.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
