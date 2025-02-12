@@ -18,12 +18,11 @@ affected_viewholders = set()
 
 for file in changed_files:
     if file.filename.endswith(".kt") or file.filename.endswith(".java"):
-        with open(file.patch, "r") as f:
-            content = f.read()
-            if "RecyclerView" in content:
-                changed_item_types.add(file.filename)
-                if "ViewHolder" in content:
-                    affected_viewholders.add(file.filename)
+        patch = file.patch
+        if "RecyclerView" in patch:
+            changed_item_types.add(file.filename)
+            if "ViewHolder" in patch:
+                affected_viewholders.add(file.filename)
 
 # Save analysis results
 with open(".github/scripts/analysis.txt", "w") as f:
