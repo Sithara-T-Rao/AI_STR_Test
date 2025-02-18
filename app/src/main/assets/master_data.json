@@ -1,0 +1,46 @@
+[
+  {
+    "view": {
+      "title": "Type0 Title",
+      "subtitle": "This is a subtitle for Type 0",
+      "type": "TYPE_0",
+      "items": [
+        {  "name": "Type0-Item1" },
+        {  "name": "Type0-Item2" }
+      ]
+    }
+  },
+  {
+    "view": {
+      "title": "Type1 Title",
+      "subtitle": "This is a subtitle for Type 1",
+      "type": "TYPE_1",
+      "items": [
+        {"name": "Type1-Item1" },
+        {"name": "Type1-Item2" }
+      ]
+    }
+  },
+  {
+    "view": {
+      "title": "Type2 Title",
+      "subtitle": "This is a subtitle for Type 2",
+      "type": "TYPE_2",
+      "items": [
+        { "name": "Type2-Item1" },
+        { "name": "Type2-Item2" }
+      ]
+    }
+  },
+  {
+    "view": {
+      "title": "Type3 Title",
+      "type": "TYPE_3",
+      "subtitle": "This is a subtitle for Type 3",
+      "items": [
+        { "name": "Type3-Item1" },
+        { "name": "Type3-Item2" }
+      ]
+    }
+  }
+]
