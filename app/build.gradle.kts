@@ -71,5 +71,15 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
     implementation("com.airbnb.android:lottie:3.4.0")
+    implementation("com.google.code.gson:gson:2.8.9")
+
 
 }
+tasks.register<Exec>("checkPRDiff") {
+    commandLine("python3", "$rootDir/scripts/check_pr_diff.py", "2")
+    isIgnoreExitValue = true
+    standardOutput = System.out
+    errorOutput = System.err
+}
+
+

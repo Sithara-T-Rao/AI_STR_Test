@@ -1,12 +1,14 @@
 package com.example.ai_str_test
 
+import ItemData
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class MyChildAdapter(private val dataList: List<String>) : RecyclerView.Adapter<MyChildAdapter.MyChildViewHolder>() {
+//class MyChildAdapter(private val dataList: List<String>) : RecyclerView.Adapter<MyChildAdapter.MyChildViewHolder>() {
+class MyChildAdapter(private val dataList: List<ItemData>) : RecyclerView.Adapter<MyChildAdapter.MyChildViewHolder>() {
 
     class MyChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(R.id.childTextView)
@@ -18,7 +20,7 @@ class MyChildAdapter(private val dataList: List<String>) : RecyclerView.Adapter<
     }
 
     override fun onBindViewHolder(holder: MyChildViewHolder, position: Int) {
-        holder.textView.text = dataList[position]
+        holder.textView.text = dataList[position].name
 
     }
 
