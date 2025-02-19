@@ -42,5 +42,27 @@
         { "name": "Type3-Item2" }
       ]
     }
+  },
+  {
+    "view": {
+      "title": "Type4 Title",
+      "type": "TYPE_4",
+      "subtitle": "This is a subtitle for Type 4",
+      "items": [
+        { "name": "Type4-Item1" },
+        { "name": "Type4-Item2" }
+      ]
+    }
+  },
+  {
+    "view": {
+      "title": "Type5 Title",
+      "type": "TYPE_5",
+      "subtitle": "This is a subtitle for Type 5",
+      "items": [
+        { "name": "Type5-Item1" },
+        { "name": "Type5-Item2" }
+      ]
+    }
   }
 ]

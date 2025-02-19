@@ -37,6 +37,11 @@ class MyAdapter(private val dataList: List<MasterView>) : RecyclerView.Adapter<R
         val title: TextView = itemView.findViewById(R.id.title)
         val rv: RecyclerView = itemView.findViewById(R.id.child_rv)
     }
+    class MyTitleSubtitleRightViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val subtitle: TextView = itemView.findViewById(R.id.subtitle)
+        val title: TextView = itemView.findViewById(R.id.title)
+        val rv: RecyclerView = itemView.findViewById(R.id.child_rv)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if(viewType == 0) {
@@ -45,6 +50,10 @@ class MyAdapter(private val dataList: List<MasterView>) : RecyclerView.Adapter<R
         } else if(viewType == 1) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout2, parent, false)
             return MyTitleSubtitleViewHolder(view)
+        }
+        else if(viewType == 2) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout_3, parent, false)
+            return MyTitleSubtitleRightViewHolder(view)
         }
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout1, parent, false)
         return MyImageViewHolder(view)
@@ -71,6 +80,15 @@ class MyAdapter(private val dataList: List<MasterView>) : RecyclerView.Adapter<R
             val adapter = MyChildAdapter( dataList[position].view.items)
             holder.rv.adapter = adapter
         }
+        else if(holder is MyTitleSubtitleRightViewHolder){
+            holder.title.text = dataList[position].view.title
+            holder.subtitle.text = dataList[position].view.subtitle
+
+
+            holder.rv.layoutManager = LinearLayoutManager(holder.rv.context, RecyclerView.HORIZONTAL, false)
+            val adapter = MyChildAdapter( dataList[position].view.items)
+            holder.rv.adapter = adapter
+        }
 
 
 
@@ -85,6 +103,7 @@ class MyAdapter(private val dataList: List<MasterView>) : RecyclerView.Adapter<R
         return when (dataList[position].view.type) {
             TYPE_0 -> return 0
             TYPE_1 -> return 1
+            TYPE_2 -> return 2
             //        else  if(dataList[position].view.type == TYPE_2) return 2
             else -> 2
         }
